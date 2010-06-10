@@ -1,0 +1,113 @@
+#!/usr/bin/perl 
+
+package Shell_NT;
+
+24; #require
+
+use warnings;
+use strict;
+
+use Data::Dumper;
+use Term::ReadLine;
+use Class::Inspector;
+
+#use Module::Pluggable require => 1;
+use Module::Pluggable instantiate => 'new';
+
+# WRONG!!! it is not supposed to use inh
+use base 'Shell_NT::System';
+
+# starts everything
+
+shell();
+
+# Create a self object for modules
+
+sub new {
+
+    my ($class) = @_;
+
+    my $self = {
+        version => 'test',
+        stack => [ ],
+        out_stack => [ ],
+    };
+
+    bless $self, $class;
+
+    return $self;
+
+}
+
+
+sub shell {
+
+    my $terminal = Term::ReadLine->new('Shell NT');
+    my $prompt = "#--> ";
+    my $OUT = $terminal->OUT || \*STDOUT;
+
+    my $shell_nt = Shell_NT->new();
+
+    while ( defined (my $cmdline = $terminal->readline( $prompt ) ) ) {
+            $shell_nt->dispatch($cmdline);
+    }
+}
+
+sub dispatch {
+
+    my ($self,$cmdline) = @_;
+
+    my @plugins = $self->plugins();
+
+    $cmdline =~ / 
+        (\w+)
+        \s?
+        (.*)
+        /x;
+
+    # prepare the enviroment for this command
+
+    my $cmd = "";
+    my @args = ();
+
+    $cmd = $1;
+    @args = split (/ / , $2) if $2;
+
+    @args = $self->process_stack(@args);
+
+    warn "[$cmdline , $cmd, @args]\n\n" if $ENV{DEBUGNT};
+
+    for my $plugin (@plugins) {
+		print Dumper $plugin;
+#        next if ! $plugin->can($cmd);
+        return $plugin->$cmd($self,@args);
+    }
+
+    print "Failed running [$cmd] @args\n$@\n" if 
+        $self->system_fallback($cmd,@args);
+
+}
+
+#
+#  change $x by a line from stack
+#
+
+sub process_stack {
+
+    my ($self,@args) = @_;
+
+    for (@args) {
+        
+        if (/\$(\d)/ ) {
+                $_ = $self->{stack}[$1];
+        }
+    }
+
+    print Dumper @args;
+
+    return @args;
+
+}
+
+
+
