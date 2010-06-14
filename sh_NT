@@ -1,57 +1,22 @@
 #!/usr/bin/perl 
 
-package Shell_NT;
-
-24; #require
-
 use warnings;
 use strict;
 
-use Data::Dumper;
-use Term::ReadLine;
-use Class::Inspector;
+use Shell_NT;
+use Shell_NT::System;
 
-#use Module::Pluggable require => 1;
-use Module::Pluggable instantiate => 'new';
+#
+# Welcome to Shell NT
+#
+#
+#
+#
 
-# WRONG!!! it is not supposed to use inh
-use base 'Shell_NT::System';
+my $shell = Shell_NT->new();
 
-# starts everything
+$shell->shell();
 
-shell();
-
-# Create a self object for modules
-
-sub new {
-
-    my ($class) = @_;
-
-    my $self = {
-        version => 'test',
-        stack => [ ],
-        out_stack => [ ],
-    };
-
-    bless $self, $class;
-
-    return $self;
-
-}
-
-
-sub shell {
-
-    my $terminal = Term::ReadLine->new('Shell NT');
-    my $prompt = "#--> ";
-    my $OUT = $terminal->OUT || \*STDOUT;
-
-    my $shell_nt = Shell_NT->new();
-
-    while ( defined (my $cmdline = $terminal->readline( $prompt ) ) ) {
-            $shell_nt->dispatch($cmdline);
-    }
-}
 
 sub dispatch {
 
@@ -77,13 +42,25 @@ sub dispatch {
 
     warn "[$cmdline , $cmd, @args]\n\n" if $ENV{DEBUGNT};
 
+	#
+	# run commands in iterative way
+	#
+	# if the command exists, prepare the context!
+	# if not goes , in the last case try in the system
+	# if not print a funny message
+
     for my $plugin (@plugins) {
-		print Dumper $plugin;
-#        next if ! $plugin->can($cmd);
-        return $plugin->$cmd($self,@args);
+		if ($ENV{DEBUGNT} ){
+			print Dumper $plugin;
+			print "plugin ^\n";
+		}
+        next if ! $plugin->can($cmd);
+
+		$plugin->context($self);
+        return $plugin->$cmd(@args);
     }
 
-    print "Failed running [$cmd] @args\n$@\n" if 
+    print "I don't know what is [$cmd] @args\n$@\n" if 
         $self->system_fallback($cmd,@args);
 
 }

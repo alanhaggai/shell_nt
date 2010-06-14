@@ -2,21 +2,22 @@ package Shell_NT::Plugin::Core;
 
 24; #require
 
-# new is necessary!
+use base 'Shell_NT::Plugin::Base';
 
-sub new {
+use strict;
+use warnings;
 
-	my ($class) = @_;
+use Data::Dumper;
 
-	return bless { } , $class;
-
-}
 
 sub set {
 
-    my ($self, $shell, @args) = @_;
+	print "set above:\n";
+	print Dumper \@_;
+    my ($self, @args) = @_;
+    print "my ($self, @args) = @_;\n";
 
-    push @{ $shell->{stack} }, @args;
+    push @{ $self->{ctx}{stack} }, "@args";
 
     return 0;
 
@@ -24,6 +25,10 @@ sub set {
 
 sub enviroment {
 
+	# function answer list
+	# answer list can be paged (externally)
+
+	print "This is the enviroment variables\n";
     print map { "$_  =  $ENV{$_}\n"  }  keys %ENV;
 
 
@@ -31,13 +36,19 @@ sub enviroment {
 
 sub show_stack {
 
-    my ($self, $shell, @args) = @_;
+    my ($self, @args) = @_;
 
     my $i = 0;
 
-    print map { $i++ ; ">$i: $_\n" } @{ $shell->{stack} } ;
+    print map { $i++ ; ">$i: $_\n" } @{ $self->{ctx}{stack} } ;
 
     return 0;
 
 }
 
+sub pid {
+
+	# function answer is ... we are asking
+	print "My pid is $$\n";
+
+}
