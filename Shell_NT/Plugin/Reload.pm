@@ -2,7 +2,7 @@ package Shell_NT::Plugin::Reload;
 
 24; #require
 
-use base 'Shell_NT::Plugin::Base';
+use base 'Shell_NT::Base';
 
 use strict;
 use warnings;

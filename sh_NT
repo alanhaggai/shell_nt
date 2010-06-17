@@ -3,88 +3,21 @@
 use warnings;
 use strict;
 
-use Shell_NT;
-use Shell_NT::System;
+# basic shell
 
+use Shell_NT;
+use Shell_NT::History;
+
+# create new context
 #
-# Welcome to Shell NT
-#
-#
-#
-#
+
+# main plugins
 
 my $shell = Shell_NT->new();
 
-$shell->shell();
-
-
-sub dispatch {
-
-    my ($self,$cmdline) = @_;
-
-    my @plugins = $self->plugins();
-
-    $cmdline =~ / 
-        (\w+)
-        \s?
-        (.*)
-        /x;
-
-    # prepare the enviroment for this command
-
-    my $cmd = "";
-    my @args = ();
-
-    $cmd = $1;
-    @args = split (/ / , $2) if $2;
-
-    @args = $self->process_stack(@args);
-
-    warn "[$cmdline , $cmd, @args]\n\n" if $ENV{DEBUGNT};
-
-	#
-	# run commands in iterative way
-	#
-	# if the command exists, prepare the context!
-	# if not goes , in the last case try in the system
-	# if not print a funny message
-
-    for my $plugin (@plugins) {
-		if ($ENV{DEBUGNT} ){
-			print Dumper $plugin;
-			print "plugin ^\n";
-		}
-        next if ! $plugin->can($cmd);
-
-		$plugin->context($self);
-        return $plugin->$cmd(@args);
-    }
-
-    print "I don't know what is [$cmd] @args\n$@\n" if 
-        $self->system_fallback($cmd,@args);
-
-}
-
-#
-#  change $x by a line from stack
+# this shell is only interative!
+# so opens the input command line
 #
 
-sub process_stack {
-
-    my ($self,@args) = @_;
-
-    for (@args) {
-        
-        if (/\$(\d)/ ) {
-                $_ = $self->{stack}[$1];
-        }
-    }
-
-    print Dumper @args;
-
-    return @args;
-
-}
-
-
+$shell->console();
 

@@ -5,19 +5,18 @@ use warnings;
 
 24; #require
 
-# WRONG!!! it is not supposed to use inh
-use base 'Shell_NT::System';
+use base 'Shell_NT::Base';
+use Shell_NT::System;
+use Shell_NT::History;
+use Shell_NT::Context;
 
 use Data::Dumper;
 use Term::ReadLine;
-use Class::Inspector;
-
-# Can use multiple modules 
-# ideia: prompt -> shell:bla prompt
-# etc..
+use Class::Inspector;  #TODO
 
 #use Module::Pluggable require => 1;
 use Module::Pluggable instantiate => 'new';
+
 
 # Create a self object for modules
 # It contains the actual context
@@ -30,63 +29,115 @@ use Module::Pluggable instantiate => 'new';
 # in case of a scalar, can have a array where
 # the first element is the name of this thing
 #
+# history keeps the commands history, in this form
+# 
+# [ epoch , $cmdline] 
+#
 
 sub new {
 
     my ($class) = @_;
 
-    my $self = {
-        version => 'test',
-        stack => [ ],
-        out_stack => [ ],
-    };
+    my $self = $class->SUPER::new();
 
-    bless $self, $class;
+	# History is mandatory to this shell work
+	$self->{history} = Shell_NT::History->new();
+
+	# now, create the terminal
+	$self->{terminal} = Term::ReadLine->new('Shell_NT');
+	# add the old history to terminal (for use with up key)
+	$self->{terminal}->addhistory($_) for ( $self->{history}->all() );
+
+	# Add the context
+	$self->{ctx} = Shell_NT::Context->new();
 
     return $self;
 
 }
 
-sub shell {
+sub console {
 	
 	my ($self) = @_;
 
-	# Terminal name and prompt should came from
-	# it plugin from Start plugins or etc..
-
-    my $terminal = Term::ReadLine->new('Shell NT');
     my $prompt = "#--> ";
-    my $OUT = $terminal->OUT || \*STDOUT;
 
-    my $shell_nt = Shell_NT->new();
+	my $terminal = $self->{terminal};
+   
+	# ?
+	my $OUT = $terminal->OUT || \*STDOUT;
 
     while ( defined (my $cmdline = $terminal->readline( $prompt ) ) ) {
-           # $shell_nt->dispatch($cmdline);
-		   print "$cmdline<\n";
+			$cmdline = $self->{ctx}->interpolate( $cmdline );
+			$self->{history}->push( $cmdline );
+			$self->_run;
     }
 }
 
-sub dispatch {
+# it always take from history, the last command
+# since the history is per process, this is not a problem
+# also we have time stamp to save the history
+# Also the cmdline is history should be already interpolated with stack
 
-	my ($self, $cmdline ) = @_;
+sub _run {
+
+	my ($self) = @_;
 	
-	my ($cmd,@args) = $self->process_cmdline($cmdline);
+	my $cmdline =  $self->{history}->last();
 
+	warn "$cmdline\n\n";
+
+	my ($command , @arguments ) = $self->parse_cmdline( $cmdline );
+	
+	#
+	# run commands in iterative way!
+	#
+	# if the we have the plugin with the a sub with 
+	# the name of command ok , run it
+	#
+	# otherwise call system
+	# 
+	 
+	my @plugins = $self->plugins();
+	
+	for my $plugin ( @plugins) {
+		next if ! $plugin->can( $command );
+
+		$plugin->attach( $self );
+			eval {
+				$plugin->$command( @arguments );
+			} or do {
+				print "Error running $command with @arguments\nand $@\n";
+			};
+		$plugin->detach();
+		return;
+	
+	}
+
+    print "I don't know what is [$command] @arguments\n$@\n" if 
+        Shell_NT::System->system_fallback( $command, @arguments );
 
 }
 
+# should be a module or plugin
+# parserec?
 
-sub process_cmdline {
+sub parse_cmdline {
 
 	my ($self, $cmdline ) = @_;
 
-	#
-	# The command is the first 
-	#
+	return undef if ! $cmdline;
 	
+	$cmdline =~ m/
+		(\w+)
+		\s?
+		(.*)
+	/x;
 	
+	my $cmd = $1;
 
+	my @args = split(/ /, $2 ) if $2;
 
+	return $cmd, @args;
 }
 
 
