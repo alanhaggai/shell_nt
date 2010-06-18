@@ -30,7 +30,7 @@ sub new {
 
 sub attach {
 
-	my ($self, $shell ) = @_;
+	my ( $self, $shell ) = @_;
 
 	$self->{shell} = $shell;
 

@@ -73,7 +73,7 @@ sub DESTROY {
 		for my $register ( @{ $self->{history} } ){
 			chomp $register;
 			print $fh "$register->[0]\t$register->[1]\n" if $register;
-			print "$register->[0]\t$register->[1]\n" if $register;
+			#print "$register->[0]\t$register->[1]\n" if $register;
 		}
 	close $fh;
 

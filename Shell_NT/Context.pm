@@ -22,7 +22,7 @@ sub new {
 
 		stack => [],
 		user_stack => [],
-		foo => [] ,
+		parsed => [] ,
 
 	};
 
@@ -36,7 +36,6 @@ sub add {
 
 	my ($self, $first, @args ) = @_;
 
-	
 	# this is a scalar?
 	if ( ! ref $first ) {
 		chomp $first;
@@ -51,32 +50,49 @@ sub add {
 }
 
 # Add my own \n
+# the second index is only when there is columns
 
 sub output {
 
 	my ($self ) = @_;
+
+	$self->{parsed} = undef;
+	my $i = 0;
 	
 	for my $line ( @{ $self->{stack} } ) {
+		my $j = 0;
+		my @values = split (/ /, $line->[1] );
 		
-		# add the output as variables
-		print map { "0,0[$_] " }  split (/ /, $line->[1] );
-		print "\n";
-
+		if (scalar @values == 1) {
+			print " [$i] @values \n";
+		}else {
+			for my $column ( @values ) {
+				print " [$i,$j] $column ";
+				$j++;
+			}
+			print "\n";
+		}
+		push @{ $self->{parsed} } , [ @values ];
+		$i++;
 	}
 
-	#clean-up the stack
+	$self->{stack} = undef;
 }
+
+# just substitute the $\d,\d by the correct
+# variable from parsed stack
 
 sub interpolate {
 
-	my $cmdline = $_[1];
+	my ($self, $cmdline ) = @_;
 
-	if ( $cmdline =~ m/\$(\d)\,(\d)/ ) {
-		print "found! $1 and $2\n";
+	my $regex = qr/\$(\d+)\,?(\d+)?/; 
+	
+	while ( $cmdline =~ /$regex/g ){
+		$token = $self->{parsed}[$1][$2];
+		$cmdline = "$`$token$'";
 	}
-
 	return $cmdline;
-
 
 }
 

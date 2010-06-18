@@ -42,6 +42,11 @@ sub new {
 
 	# History is mandatory to this shell work
 	$self->{history} = Shell_NT::History->new();
+	
+	# To run commands (...)
+	# Shell_NT::System acks like a plugin
+	# but pass the command to a method
+	$self->{exec} = Shell_NT::System->new();
 
 	# now, create the terminal
 	$self->{terminal} = Term::ReadLine->new('Shell_NT');
@@ -113,13 +118,17 @@ sub _run {
 	
 	}
 
+	$self->{exec}->attach( $self );
     print "I don't know what is [$command] @arguments\n$@\n" if 
-        Shell_NT::System->system_fallback( $command, @arguments );
+        $self->{exec}->system_fallback( $command, @arguments );
+	$self->{exec}->detach();
 
 }
 
 # should be a module or plugin
 # parserec?
+#
+# Todo save quotes
 
 sub parse_cmdline {
 
