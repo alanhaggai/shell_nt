@@ -83,7 +83,7 @@ sub to_be_parsed {
 	my ($self , $command ) = @_;
 	
 	if (exists $self->{know}{parsed}{$command}) {
-		return 1 if $self->{know}{parsed}{$command} == 1;
+		return 0 if $self->{know}{parsed}{$command} == 0;
 	}
-	return 0;
+	return 1;
 }

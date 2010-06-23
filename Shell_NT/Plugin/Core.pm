@@ -48,6 +48,30 @@ sub set {
 
 }
 
+# Should be in command line (or related)
+# or define core as interface to core functions
+# no and yes can be more abstract TODO
+
+sub noparse {
+
+	my ($self, $command ) = @_;
+
+	$self->{shell}{exec}{know}{parsed}{$command} = 0;
+
+	return 1 if $self->{shell}{exec}{know}{parsed}{$command} == 0;
+
+}
+
+sub parse {
+
+	my ($self, $command ) = @_;
+
+	$self->{shell}{exec}{know}{parsed}{$command} = 1;
+
+	return 1 if $self->{shell}{exec}{know}{parsed}{$command} == 1;
+
+}
+
 sub enviroment {
 
 	# function answer list
