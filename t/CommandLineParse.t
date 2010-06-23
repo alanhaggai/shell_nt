@@ -12,8 +12,8 @@ use Test::More;
 # other expected cmd/args
 
 my $tests = [
-	[ "ls", 'ls'  ],
-	[ "ls -ls", 'ls', '-ls'],
+#	[ "ls", 'ls'  ],
+#	[ "ls -ls", 'ls', '-ls'],
 	[ 'ls "foo bar" -ls', 'ls', '-ls'],
 	[ 'perl -e \'sleep 10\'', 'perl', '-e', "'sleep 10'" ],
 	[ '/usr/bin/ls /', '/usr/bin/ls', '/'],
@@ -32,6 +32,5 @@ for my $cmdline ( @{ $tests } ) {
 
 	ok ( $command eq $cmdline->[1] , "Command ok: $command");
 	is_deeply ( [ $cmdline->[0], $command, @arguments ] , $cmdline , "all arguments: @arguments");
-
 
 }

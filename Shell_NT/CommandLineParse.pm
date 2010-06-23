@@ -37,10 +37,29 @@ sub parse_cmdline {
 	my @stack = ();
 
 	while ( $cmdline ){
-		$cmdline =~ /$doublequote|$truespace/;
-		print ">>>>>> $& <<<<<<<<<<\n";
-		warn ">>>>>> $& <<<<<<<<<<\n";
-		$cmdline = undef;
+		$cmdline =~ /$doublequote|$truespace|$singlequote/;
+		my $pre = $`;
+		my $sep = $&;
+		my $pos = $';
+
+		if ( ! $sep ) {
+			push @stack, $cmdline;
+			last;
+		}
+		if ( $sep eq " " ){
+			push @stack , $pre;
+			$cmdline = $pos;
+			next;
+		}
+		if ( $sep =~ /$doublequote/ ) {
+			my $string = "$pre$sep";
+			$cmdline = $pos;
+			$cmdline =~ /$doublequote/ ; 
+			$string .= "$`$&";
+			$cmdline = $';
+			push @stack , $string;
+			next;
+		}
 	
 	}
 
