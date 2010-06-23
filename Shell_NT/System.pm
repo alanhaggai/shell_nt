@@ -2,9 +2,14 @@ package Shell_NT::System;
 
 use base 'Shell_NT::Base';
 
-24; #require
+use warnings;
+use strict;
 
-use IPC::Open3;
+use Data::Dumper;
+
+use IPC::Open3; 
+
+24; #require
 
 #
 # It is supposed to be a true fork to enable
@@ -15,15 +20,15 @@ sub system_interactive {
 
     my ($self, $command, @args) = @_;
 
-    for $path (split(/:/ , $ENV{PATH}) ) {
+    for my $path (split(/:/ , $ENV{PATH}) ) {
         if ( -x "$path/$command" ){
             print "run: $path/$command @args\n";
             system("$path/$command @args");
-            return 0;
+            return 1;
         }
     }
 
-    return 1;
+    return 0;
 }
 
 # 
@@ -37,9 +42,9 @@ sub system_parsed {
 
     my ($self, $command, @args) = @_;
 
-	$ctx = $self->{ctx};
+	my $ctx = $self->{ctx};
 
-	my ( $read, $write, $error);
+	my ( $read, $write, $error );
 
 	my $pid = open3( $write, $read, $error, "$command @args");
 	
@@ -53,15 +58,32 @@ sub system_parsed {
 
 	$ctx->output();
 
-	return 0;
+	return 1;
 
 }
+
+# Take from a hash the list of commands to DO NOT
+# parse the output
+# 
 
 sub system_fallback {
 
 	my ($self, $command, @args) = @_;
 
+	if ( $self->to_be_parsed($command) ) {
+		return $self->system_parsed($command, @args);
+	}else {
+		return $self->system_interactive($command,@args);
+	}
+}
 
 
+sub to_be_parsed {
+
+	my ($self , $command ) = @_;
 	
+	if (exists $self->{know}{parsed}{$command}) {
+		return 1 if $self->{know}{parsed}{$command} == 1;
+	}
+	return 0;
 }

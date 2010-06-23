@@ -9,6 +9,8 @@ use base 'Shell_NT::Base';
 use Shell_NT::System;
 use Shell_NT::History;
 use Shell_NT::Context;
+use Shell_NT::CommandLineParse;
+use Shell_NT::Know;
 
 use Data::Dumper;
 use Term::ReadLine;
@@ -38,7 +40,12 @@ sub new {
 
     my ($class) = @_;
 
-    my $self = $class->SUPER::new();
+	# Some hardcoded defaults for now
+	# know is the the file that knows 
+	# what shell should know :)
+	Shell_NT::Know->define_root("$ENV{HOME}/.shell_nt/");
+    
+	my $self = $class->SUPER::new();
 
 	# History is mandatory to this shell work
 	$self->{history} = Shell_NT::History->new();
@@ -89,9 +96,9 @@ sub _run {
 	
 	my $cmdline =  $self->{history}->last();
 
-	warn "$cmdline\n\n";
+	warn "$cmdline\n\n" if $ENV{SHELL_NT_DEBUG};
 
-	my ($command , @arguments ) = $self->parse_cmdline( $cmdline );
+	my ($command , @arguments ) = parse_cmdline( $cmdline );
 	
 	#
 	# run commands in iterative way!
@@ -120,33 +127,8 @@ sub _run {
 
 	$self->{exec}->attach( $self );
     print "I don't know what is [$command] @arguments\n$@\n" if 
-        $self->{exec}->system_fallback( $command, @arguments );
+      ! $self->{exec}->system_fallback( $command, @arguments );
 	$self->{exec}->detach();
 
 }
-
-# should be a module or plugin
-# parserec?
-#
-# Todo save quotes
-
-sub parse_cmdline {
-
-	my ($self, $cmdline ) = @_;
-
-	return undef if ! $cmdline;
-	
-	$cmdline =~ m/
-		(\w+)
-		\s?
-		(.*)
-	/x;
-	
-	my $cmd = $1;
-
-	my @args = split(/ /, $2 ) if $2;
-
-	return $cmd, @args;
-}
-
 

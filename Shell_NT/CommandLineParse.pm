@@ -37,6 +37,7 @@ sub parse_cmdline {
 	my @stack = ();
 
 	while ( $cmdline ){
+		my $string;
 		$cmdline =~ /$doublequote|$truespace|$singlequote/;
 		my $pre = $`;
 		my $sep = $&;
@@ -46,24 +47,46 @@ sub parse_cmdline {
 			push @stack, $cmdline;
 			last;
 		}
-		if ( $sep eq " " ){
-			push @stack , $pre;
+		if ( $sep =~ /$truespace/ ){
+			push @stack , $pre if $pre;
 			$cmdline = $pos;
 			next;
 		}
 		if ( $sep =~ /$doublequote/ ) {
-			my $string = "$pre$sep";
-			$cmdline = $pos;
-			$cmdline =~ /$doublequote/ ; 
-			$string .= "$`$&";
-			$cmdline = $';
+			($cmdline ,$string) = quoted( $doublequote, $pre, $sep, $pos);
 			push @stack , $string;
 			next;
 		}
-	
+		if ( $sep =~ /$singlequote/ ) {
+			($cmdline ,$string) = quoted( $singlequote, $pre, $sep, $pos);
+			push @stack , $string;
+			next;
+		}
+
+	 
 	}
 
 	return @stack;
+
+}
+
+# It is supposed to quote always be the begin of 
+# token, so for now we ignore the pre match
+
+sub quoted {
+
+	my ( $quote, $pre, $sep, $pos ) = @_;
+
+	my $string = $sep;
+
+	$pos =~ /$quote/;
+	$pre = $`;
+	$sep = $&;
+	$pos = $';
+
+	$string .= "$pre$sep";
+
+	return $pos, $string;
 
 }
 

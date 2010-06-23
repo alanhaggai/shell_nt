@@ -65,9 +65,20 @@ sub define_root {
 	
 	return undef if ref $class;
 	
+	if ( ! -e $new_root ) {
+		make_path "$new_root";
+	}
 	$root = $new_root;
 	
 	return $root;
+}
+
+sub get_root {
+
+	# more talk functions
+	die "root $root is undefined, this is really bad\n" if ! $root;
+	return $root;
+
 }
 
 # timer triggered?

@@ -10,6 +10,8 @@ use strict;
 use warnings;
 use Data::Dumper;
 
+use Shell_NT::Know;
+
 #
 # new: I receive a shell, and add myself on it
 # or simple return a new shell
@@ -21,10 +23,12 @@ sub new {
 
 	# zero when $shell is not a shell
 	# hardcoded shell history file name
+	
+	my $root = Shell_NT::Know->get_root();
 
 	my $self = {
 		history => [ ],
-		file => "$ENV{HOME}/.shell_nt_history",
+		file => "$root/.shell_nt_history",
 	};
 
 	bless $self, $class;

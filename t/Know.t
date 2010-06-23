@@ -72,4 +72,11 @@ my $nested_saved = Shell_NT::Know->new("Hulk/iPhone");
 
 is_deeply ( $nested_saved->{know} , $toomuchdeep , "Is really deep");
 
+# sub modules 
+#
 
+use Shell_NT::History;
+
+my $test = Shell_NT::History->new();
+
+ok ($test->{file} eq "acdc", "$test->{file} ?");

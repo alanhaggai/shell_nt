@@ -7,6 +7,8 @@ package Shell_NT::Base;
 use strict;
 use warnings;
 
+use Shell_NT::Know;
+
 # base for all plugins
 # and core modules
 
@@ -15,9 +17,17 @@ sub new {
 
 	my ($class) = @_;
 
+	#know/data/config
+	(my $know_dir = $class) =~ s/::/\//g;
+	$know_dir =~ s/Shell_NT\///;
+
+	my $data = Shell_NT::Know->new( $know_dir );
+
 	my $self = {
 		stamp => time(),
 		context => undef,
+		data => $data,
+		know => $data->{know},
 	};
 
 	bless $self, $class;

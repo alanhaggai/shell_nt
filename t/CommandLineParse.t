@@ -12,13 +12,13 @@ use Test::More;
 # other expected cmd/args
 
 my $tests = [
-#	[ "ls", 'ls'  ],
-#	[ "ls -ls", 'ls', '-ls'],
-	[ 'ls "foo bar" -ls', 'ls', '-ls'],
+	[ "ls", 'ls'  ],
+	[ "ls -ls", 'ls', '-ls'],
+	[ 'ls "foo bar" -ls', ls, '"foo bar"',  '-ls'],
 	[ 'perl -e \'sleep 10\'', 'perl', '-e', "'sleep 10'" ],
 	[ '/usr/bin/ls /', '/usr/bin/ls', '/'],
 	[ '/home\ with\ spaces/frederico/command foo bar', '/home\ with\ spaces/frederico/command', "foo", "bar"],
-	[ "\"/usr/ bin/ls\" /fo\ o  ' '", '"/usr/ bin/ls"', '/fo o',"' '"],
+	[ '"/usr/ bin/ls" /fo\ o  \' \'', '"/usr/ bin/ls"', '/fo\ o',"' '"],
 ];
 
 plan tests => ( scalar @$tests ) * 2 + 1;

@@ -1,5 +1,8 @@
 package Shell_NT::Context;
 
+use warnings;
+use strict;
+
 24; # require
 
 #
@@ -81,6 +84,10 @@ sub output {
 
 # just substitute the $\d,\d by the correct
 # variable from parsed stack
+#
+# Also interpolate the stack
+#
+# $s\d
 
 sub interpolate {
 
@@ -89,9 +96,20 @@ sub interpolate {
 	my $regex = qr/\$(\d+)\,?(\d+)?/; 
 	
 	while ( $cmdline =~ /$regex/g ){
-		$token = $self->{parsed}[$1][$2];
+		my $token = $self->{parsed}[$1][$2];
 		$cmdline = "$`$token$'";
 	}
+
+	# we ignore the zero in stack
+
+	my $stack = qr/\$s(\d+)/;
+	while ( $cmdline =~ /$stack/g ){
+		my $index = $1 - 1;
+		# don't exist stack #index
+		my $token = $self->{stack}[($1 - 1)];
+		$cmdline = "$`$token$'";
+	}
+
 	return $cmdline;
 
 }

@@ -12,6 +12,9 @@ use Shell_NT::History;
 #
 
 # main plugins
+#
+# some parameters:
+# know: base directory with config and data
 
 my $shell = Shell_NT->new();
 

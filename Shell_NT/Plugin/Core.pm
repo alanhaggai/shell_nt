@@ -39,14 +39,12 @@ sub exit {
 
 sub set {
 
-	print "set above:\n";
-	print Dumper \@_;
     my ($self, @args) = @_;
-    print "my ($self, @args) = @_;\n";
 
     push @{ $self->{ctx}{stack} }, "@args";
 
-    return 0;
+	# verbs
+	print "Added @args to ", scalar @{ $self->{ctx}{stack} }, " position at main stack\n";
 
 }
 
@@ -68,8 +66,6 @@ sub show_stack {
     my $i = 0;
 
     print map { $i++ ; ">$i: $_\n" } @{ $self->{ctx}{stack} } ;
-
-    return 0;
 
 }
 
