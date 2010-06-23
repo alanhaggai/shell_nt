@@ -5,8 +5,25 @@ use strict;
 
 # basic shell
 
+# For now I do this ugly 
+# thing 
+
+my $olddir;
+
+BEGIN {
+	require File::Basename;
+	require Cwd;
+	Cwd->import( qw/getcwd/ );
+	File::Basename->import( qw/fileparse/ );
+	$olddir = getcwd();
+	my ($file, $dir) = fileparse($0);
+	chdir $dir;
+}
+
 use Shell_NT;
 use Shell_NT::History;
+
+chdir $olddir;
 
 # create new context
 #
