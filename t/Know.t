@@ -7,7 +7,7 @@
 use lib '../';
 use Test::More;
 
-plan tests => 9;
+plan tests => 10;
 
 use_ok("Shell_NT::Know");
 
@@ -79,4 +79,4 @@ use Shell_NT::History;
 
 my $test = Shell_NT::History->new();
 
-ok ($test->{file} eq "acdc", "$test->{file} ?");
+ok ($test->{file} eq "./Nested/.shell_nt_history", "$test->{file} ?");

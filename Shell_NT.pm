@@ -126,9 +126,10 @@ sub _run {
 	}
 
 	$self->{exec}->attach( $self );
-    print "I don't know what is [$command] @arguments\n$@\n" if 
-      ! $self->{exec}->system_fallback( $command, @arguments );
+      my $status = $self->{exec}->system_fallback( $command, @arguments );
 	$self->{exec}->detach();
+
+	#error if $status;
 
 }
 

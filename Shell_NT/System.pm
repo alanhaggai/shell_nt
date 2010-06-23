@@ -23,8 +23,8 @@ sub system_interactive {
     for my $path (split(/:/ , $ENV{PATH}) ) {
         if ( -x "$path/$command" ){
             print "run: $path/$command @args\n";
-            system("$path/$command @args");
-            return 1;
+            my $status = system("$path/$command @args");
+            return $status;
         }
     }
 
@@ -50,15 +50,17 @@ sub system_parsed {
 	
 	waitpid $pid, 0;
 
+	my $status = $?;
+
 	while( <$read> ){
 	
 		$ctx->add ( $_ );
 	
 	}
 
-	$ctx->output();
+	$ctx->output( $status );
 
-	return 1;
+	return $status;
 
 }
 

@@ -26,6 +26,22 @@ sub meta {
 	print Dumper $self->{shell};
 }
 
+# built-in not to much
+# stack of directories 
+# for now the history works
+
+sub cd {
+
+	my ($self, @arguments) = @_;
+
+	if (@arguments) {
+		chdir "@arguments";
+	} else {
+		chdir $ENV{HOME};
+	}
+
+}
+
 # cry for exiting!
 
 sub exit {

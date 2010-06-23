@@ -24,7 +24,7 @@ BEGIN {
 
 my $not = qr/(?<!\\)/;
 
-my $truespace = qr/$not\s/;
+my $truespace = qr/$not\s+/;
 
 my $singlequote = qr/$not\'/;
 my $doublequote = qr/$not\"/;

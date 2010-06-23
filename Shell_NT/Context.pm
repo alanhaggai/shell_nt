@@ -3,6 +3,10 @@ package Shell_NT::Context;
 use warnings;
 use strict;
 
+use Term::ANSIColor;
+
+use Shell_NT::CommandLineParse;
+
 24; # require
 
 #
@@ -57,22 +61,37 @@ sub add {
 
 sub output {
 
-	my ($self ) = @_;
+	my ($self , $status ) = @_;
 
 	$self->{parsed} = undef;
 	my $i = 0;
+
+	if ( $status ) {
+		print map { "$_->[1]\n" } @{ $self->{stack} };
+		$self->{stack} = undef;
+		return ;	
+	}
 	
 	for my $line ( @{ $self->{stack} } ) {
 		my $j = 0;
-		my @values = split (/ /, $line->[1] );
+		my @values = parse_cmdline( $line->[1] );
 		
 		if (scalar @values == 1) {
-			print " [$i] @values \n";
+			print color 'blue' ;
+			print "[$i] ";
+			print color 'reset';
+			print "@values\n";
 		}else {
 			for my $column ( @values ) {
-				print " [$i,$j] $column ";
+				print color 'blue';
+				print "[$i,$j]" if $j < 3;
+				print color 'reset';
+				print color 'green' if $j == 0;
+				print "\t" if $j == 0;
+				print "$column ";
 				$j++;
 			}
+
 			print "\n";
 		}
 		push @{ $self->{parsed} } , [ @values ];
