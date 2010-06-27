@@ -13,7 +13,7 @@ BEGIN {
 	$VERSION = 1.00;
 
 	@ISA = qw(Exporter);
-	@EXPORT = qw ( &parse_cmdline );
+	@EXPORT = qw ( &parse_cmdline &parse_output );
 	@EXPORT_TAGS = ( );
 
 	@EXPORT_OK = ( );
@@ -62,8 +62,6 @@ sub parse_cmdline {
 			push @stack , $string;
 			next;
 		}
-
-	 
 	}
 
 	return @stack;
@@ -90,6 +88,48 @@ sub quoted {
 
 }
 
+# almost the same as 
+# parse_cmdline, but preserves the 
+# whitespace 
+
+sub parse_output {
+
+	my $cmdline = shift;
+
+	# primary token is a *non-meta-space*
+	my @stack = ();
+
+	while ( $cmdline ){
+		my $string;
+		$cmdline =~ /$doublequote|$truespace|$singlequote/;
+		my $pre = $`;
+		my $sep = $&;
+		my $pos = $';
+
+		if ( ! $sep ) {
+			push @stack, $cmdline;
+			last;
+		}
+		if ( $sep =~ /$truespace/ ){
+			push @stack , "$pre$sep" if $pre;
+			$cmdline = $pos;
+			next;
+		}
+		if ( $sep =~ /$doublequote/ ) {
+			($cmdline ,$string) = quoted( $doublequote, $pre, $sep, $pos);
+			push @stack , $string;
+			next;
+		}
+		if ( $sep =~ /$singlequote/ ) {
+			($cmdline ,$string) = quoted( $singlequote, $pre, $sep, $pos);
+			push @stack , $string;
+			next;
+		}
+	}
+
+	return @stack;
+
+}
 
 24; #require
 
