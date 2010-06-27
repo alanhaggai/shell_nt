@@ -56,8 +56,10 @@ sub add {
 
 }
 
-# Add my own \n
-# the second index is only when there is columns
+#
+# This output should be a I/O like something
+#
+
 
 sub output {
 
@@ -66,37 +68,43 @@ sub output {
 	$self->{parsed} = undef;
 	my $i = 0;
 
+	# mmm, what is this status?
 	if ( $status ) {
 		print map { "$_->[1]\n" } @{ $self->{stack} };
 		$self->{stack} = undef;
 		return ;	
 	}
+
+	# add the end \n always
+	# The first columns always show just the line number, 
+	# The first column is also displayed, and the other 
+	# is just by the color change
+	# first column (green, white, cyan, white , cyan)
+	# check the number of expected output
+
+	my $digits = length scalar @{ $self->{stack} };
 	
 	for my $line ( @{ $self->{stack} } ) {
 		my $j = 0;
-		my @values = parse_cmdline( $line->[1] );
+		my @values = parse_output( $line->[1] );
 		
-		if (scalar @values == 1) {
-			print color 'blue' ;
-			print "[$i] ";
+		for my $column ( @values ) {
+			print color 'blue';
+			printf "[%${digits}d] ", $i if $j == 0;
+			# check the relevance of the columns (comment, just space, or etc)
+			my $color = $self->get_color_for_column ( $j );
+			print color $color;
+			print $column;
 			print color 'reset';
-			print "@values\n";
-		}else {
-			for my $column ( @values ) {
-				print color 'blue';
-				print "[$i,$j]" if $j < 3;
-				print color 'reset';
-				print color 'green' if $j == 0;
-				print "\t" if $j == 0;
-				print "$column ";
-				$j++;
-			}
-
-			print "\n";
+			$j++;
 		}
+		print color 'blue';
+		print "\t[$i,$j]";
+		print "\n";
 		push @{ $self->{parsed} } , [ @values ];
 		$i++;
 	}
+	print color 'reset';
 
 	$self->{stack} = undef;
 }
@@ -130,6 +138,17 @@ sub interpolate {
 	}
 
 	return $cmdline;
+
+}
+
+sub get_color_for_column {
+
+	my ($self, $index ) = @_;
+
+	return 'green' if $index == 0;
+
+	return $index % 2 ? 'cyan'
+					  : 'white';
 
 }
 

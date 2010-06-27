@@ -23,8 +23,13 @@ sub reload {
 
 	my ($self) = @_;
 	print "$0\n";
-	exec( "$0" );
-
+	my $ok = system ("perl -c $0");
+	if (! $ok){
+		exec( "$0" );
+	} else {
+		print "($ok $?)\n";
+		print "Is not possible to reload myself\n";
+	}
 }
 
 
