@@ -13,8 +13,10 @@ use IPC::Open3;
 
 #
 # It is supposed to be a true fork to enable
-# a second plane
+# a second plane  TODO
 #
+# Saves the status of this command
+# 
 
 sub system_interactive {
 
@@ -51,10 +53,10 @@ sub system_parsed {
 	waitpid $pid, 0;
 
 	my $status = $?;
-	print "$command exited with non zero as $status\n"; # if verbose bla
+	print "$command exited with $status\n" if $ENV{SHELL_NT_DEBUG};
 
 	while( <$read> ){
-	
+		print "[$_]" if $ENV{SHELL_NT_DEBUG};
 		$ctx->add ( $_ );
 	
 	}

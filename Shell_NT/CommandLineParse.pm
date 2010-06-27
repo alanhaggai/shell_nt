@@ -29,6 +29,8 @@ my $truespace = qr/$not\s+/;
 my $singlequote = qr/$not\'/;
 my $doublequote = qr/$not\"/;
 
+my $twodots = qr/$not\:/;
+
 sub parse_cmdline {
 	
 	my $cmdline = shift;
@@ -101,7 +103,7 @@ sub parse_output {
 
 	while ( $cmdline ){
 		my $string;
-		$cmdline =~ /$doublequote|$truespace|$singlequote/;
+		$cmdline =~ /$doublequote|$truespace|$singlequote|$twodots/;
 		my $pre = $`;
 		my $sep = $&;
 		my $pos = $';
@@ -110,8 +112,14 @@ sub parse_output {
 			push @stack, $cmdline;
 			last;
 		}
+		if ( $sep =~ /$twodots/ ) {
+			push @stack, $pre if $pre;
+			push @stack, $sep if $sep;
+			$cmdline = $pos;
+			next;
+		}
 		if ( $sep =~ /$truespace/ ){
-			push @stack , "$pre$sep" if $pre;
+			push @stack , "$pre$sep" if $pre || $sep;
 			$cmdline = $pos;
 			next;
 		}

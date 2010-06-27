@@ -16,8 +16,6 @@ use Shell_NT::CommandLineParse;
 # globally a history of output of commands
 # that can be parsed and used with a set of 
 # commands
-#
-
 
 # free object
 
@@ -68,12 +66,15 @@ sub output {
 	$self->{parsed} = undef;
 	my $i = 0;
 
-	# mmm, what is this status?
-	if ( $status ) {
-		print map { "$_->[1]\n" } @{ $self->{stack} };
-		$self->{stack} = undef;
-		return ;	
-	}
+	return 1 if ! $self->{stack};
+
+	# since the output parser doesn't destroy 
+	# the output anymore
+	#if ( $status ) {
+	#	print map { "$_->[1]\n" } @{ $self->{stack} };
+	#	$self->{stack} = undef;
+	#	return ;	
+	#}
 
 	# add the end \n always
 	# The first columns always show just the line number, 
@@ -87,6 +88,7 @@ sub output {
 	for my $line ( @{ $self->{stack} } ) {
 		my $j = 0;
 		my @values = parse_output( $line->[1] );
+		my $columns = scalar @values;
 		
 		for my $column ( @values ) {
 			print color 'blue';
@@ -99,7 +101,7 @@ sub output {
 			$j++;
 		}
 		print color 'blue';
-		print "\t[$i,$j]";
+		print "\t[$i,$j]" if $columns > 2;
 		print "\n";
 		push @{ $self->{parsed} } , [ @values ];
 		$i++;
@@ -107,6 +109,8 @@ sub output {
 	print color 'reset';
 
 	$self->{stack} = undef;
+
+	return 1;
 }
 
 # just substitute the $\d,\d by the correct

@@ -22,10 +22,19 @@ use POSIX qw/setsid/;
 sub reload {
 
 	my ($self) = @_;
-	print "$0\n";
+
+	my $shell = $self->{shell};
+	my $cmdline = $shell->{mycmdline};
+	my $refdir = $shell->{refdir};
+	
+	chdir $refdir if $refdir;
+
+	system ("perl -v") if $ENV{SHELL_NT_DEBUG};
+	
 	my $ok = system ("perl -c $0");
 	if (! $ok){
-		exec( "$0" );
+		undef $shell->{history};
+		exec( "$cmdline" );
 	} else {
 		print "($ok $?)\n";
 		print "Is not possible to reload myself\n";

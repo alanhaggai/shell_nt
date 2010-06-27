@@ -1,15 +1,12 @@
 #!/usr/bin/perl 
-f
+
 use warnings;
 use strict;
 
 use File::Basename;
-use Cwd;
 my $dir;
 
 BEGIN {
-	#$dir = getcwd();
-	#$dir .= "/" . (fileparse($0))[1];
 	$dir .=  (fileparse($0))[1];
 }
 

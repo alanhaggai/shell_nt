@@ -52,17 +52,24 @@ sub load_history {
 	
 	my ($self ) = @_;
 
-	open my $fh, "<", $self->{file};
-		while ( my $historical = <$fh>) {
-			$historical =~ m/
-							(\d+)\t
-							(.*)
-							/x;
-			push @{ $self->{history} }, [ $1, $2 ];
-		}
-	close $fh;
+	if (-e $self->{file} ) {
 
-	print "Looks that we recover the history from $self->{file}\n";
+		open my $fh, "<", $self->{file};
+			while ( my $historical = <$fh>) {
+				$historical =~ m/
+								(\d+)\t
+								(\w)\t
+								(\d+)\t
+								(.*)
+								/x;
+				push @{ $self->{history} }, [ $1, $2 , $3, $4 ];
+			}
+		close $fh;
+	
+		print "Looks that we recover the history from $self->{file}\n";
+	} else {
+		print "Starting a new history file in $self->{file}\n";
+	}
 
 }
 
@@ -76,8 +83,8 @@ sub DESTROY {
 	open my $fh , ">" , $self->{file};
 		for my $register ( @{ $self->{history} } ){
 			chomp $register;
-			print $fh "$register->[0]\t$register->[1]\n" if $register;
-			#print "$register->[0]\t$register->[1]\n" if $register;
+			print $fh map { "$_\t" } @$register if $register;
+			print $fh "\n";
 		}
 	close $fh;
 
@@ -89,30 +96,26 @@ sub DESTROY {
 
 sub push {
 
-	my ($self, $cmdline) = @_;
+	my ($self, $type, $status, $cmdline) = @_;
 
 	my $epoch = time();
 	
-	push @{ $self->{history} }, [ $epoch, $cmdline ];
+	push @{ $self->{history} }, [ $epoch, $type, $status, $cmdline ];
 
 }
 
-# we do not pop from history, we simple return the last
-# element 
+sub all_commands {
 
-sub last {
+	my ( $self ) = @_;
 
-	my ($self) = @_;
-
-	return (@{ $self->{history}[-1]})[1]; 
+	return map { $_->[-1] } @{ $self->{history} };
 
 }
 
 sub all {
+	
+	my ( $self ) = @_;
 
-	my ($self) = @_;
-
-	return map {  $_->[1] } @{ $self->{history} };
-
+	return @{ $self->{history} };
 
 }

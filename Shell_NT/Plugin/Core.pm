@@ -10,35 +10,80 @@ use base 'Shell_NT::Base';
 use strict;
 use warnings;
 
+use Cwd;
 use Data::Dumper;
 
-# base?
-sub meta {
+# System enviroment settings
 
-	my ($self ) = @_;
+sub enviroment {
 
-	# Just Dump the first level of 
-	# shell object
-	
-	$Data::Dumper::Maxdepth = 1;
-	
-	print "\nShell_NT Meta Dump:\n";
-	print Dumper $self->{shell};
+	my ( $self ) = @_;
+	my $ctx = $self->{ctx};
+	# function answer list
+	# answer list can be paged (externally)
+
+    $ctx->add( $_ ) for map { "$_  =  $ENV{$_}\n"  }  keys %ENV;
+	$ctx->add( "Above was displayed the enviroment variables" );
+	$ctx->output();
+
 }
+
+sub env {
+
+	my ($self, $var, @arguments ) = @_;
+	# TODO sub?
+	my $ctx = $self->{ctx};
+
+	if ( @arguments ) {
+		$ENV{$var} = @arguments;
+		$ctx->add( "Env $var defined as @arguments" );
+	} else {
+		undef $ENV{$var};
+		$ctx->add( "Env $var undefined");
+	}
+
+	$ctx->output();
+
+}
+
+
 
 # built-in not to much
 # stack of directories 
 # for now the history works
+# TODO history of chdir
 
 sub cd {
 
 	my ($self, @arguments) = @_;
+	
+	my $ctx = $self->{ctx};
 
-	if (@arguments) {
-		chdir "@arguments";
-	} else {
-		chdir $ENV{HOME};
+	my $directory = getcwd();
+
+	my $dir = "@arguments" || $ENV{HOME};
+
+	if (chdir $dir) {
+		$ctx->add ( "changed directory to $dir" );
 	}
+	$ctx->output();
+}
+
+# TODO history of chdir
+
+sub dirs {
+
+	return 0;
+
+	my ( $self ) = @_;
+
+	my $ctx = $self->{ctx};
+
+	print Dumper $self->{dir_stack};
+	
+	$ctx->add ( $_->[1] ) for ( @{ $self->{dir_stack} } );
+
+	$ctx->output();
 
 }
 
@@ -59,7 +104,6 @@ sub set {
 
     push @{ $self->{ctx}{stack} }, "@args";
 
-	# verbs
 	print "Added @args to ", scalar @{ $self->{ctx}{stack} }, " position at main stack\n";
 
 }
@@ -88,16 +132,6 @@ sub parse {
 
 }
 
-sub enviroment {
-
-	# function answer list
-	# answer list can be paged (externally)
-
-	print "This is the enviroment variables\n";
-    print map { "$_  =  $ENV{$_}\n"  }  keys %ENV;
-
-
-}
 
 sub show_stack {
 

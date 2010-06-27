@@ -12,13 +12,13 @@ use Shell_NT::Context;
 use Shell_NT::CommandLineParse;
 use Shell_NT::Know;
 
+use Cwd;
 use Data::Dumper;
 use Term::ReadLine;
 use Class::Inspector;  #TODO
 
 #use Module::Pluggable require => 1;
 use Module::Pluggable instantiate => 'new';
-
 
 # Create a self object for modules
 # It contains the actual context
@@ -47,6 +47,9 @@ sub new {
     
 	my $self = $class->SUPER::new();
 
+	$self->{refdir} = cwd;
+	$self->{mycmdline} = "$0 @ARGV";
+
 	# History is mandatory to this shell work
 	$self->{history} = Shell_NT::History->new();
 	
@@ -58,7 +61,7 @@ sub new {
 	# now, create the terminal
 	$self->{terminal} = Term::ReadLine->new('Shell_NT');
 	# add the old history to terminal (for use with up key)
-	$self->{terminal}->addhistory($_) for ( $self->{history}->all() );
+	$self->{terminal}->addhistory($_) for ( $self->{history}->all_commands() );
 
 	# Add the context
 	$self->{ctx} = Shell_NT::Context->new();
@@ -80,8 +83,8 @@ sub console {
 
     while ( defined (my $cmdline = $terminal->readline( $prompt ) ) ) {
 			$cmdline = $self->{ctx}->interpolate( $cmdline );
-			$self->{history}->push( $cmdline );
-			$self->_run;
+			my ( $type, $status ) = $self->_run( $cmdline );
+			$self->{history}->push( $type, $status, $cmdline );
     }
 }
 
@@ -92,10 +95,8 @@ sub console {
 
 sub _run {
 
-	my ($self) = @_;
+	my ( $self, $cmdline ) = @_;
 	
-	my $cmdline =  $self->{history}->last();
-
 	warn "$cmdline\n\n" if $ENV{SHELL_NT_DEBUG};
 
 	my ($command , @arguments ) = parse_cmdline( $cmdline );
@@ -110,24 +111,30 @@ sub _run {
 	# 
 	 
 	my @plugins = $self->plugins();
-	
+
+	my $status;
 	for my $plugin ( @plugins) {
 		next if ! $plugin->can( $command );
 
 		$plugin->attach( $self );
 			eval {
-				$plugin->$command( @arguments );
+				$status = $plugin->$command( @arguments );
 			} or do {
 				print "Error running $command with @arguments\nand $@\n";
+				$status = 0;
 			};
 		$plugin->detach();
-		return;
+		$self->{status} = [ "P", $status, $cmdline ];
+		return "P", $status;
 	
 	}
 
 	$self->{exec}->attach( $self );
-      my $status = $self->{exec}->system_fallback( $command, @arguments );
+		$status = $self->{exec}->system_fallback( $command, @arguments );
 	$self->{exec}->detach();
+
+	$self->{status} = [ "S", $status, $cmdline ];
+	return "S", $status;
 
 	#error if $status;
 

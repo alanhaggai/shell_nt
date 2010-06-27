@@ -17,8 +17,10 @@ sub history {
 
 	my $ctx = $self->{ctx};
 
-	for ( $self->{shell}{history}->all() ){ 
-		$ctx->add( $_ );
+	my $history = $self->{shell}{history};
+
+	for ( $history->all() ){
+		$ctx->add( $_->[-1] );
 	}
 
 	$ctx->output();
