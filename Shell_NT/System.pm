@@ -51,6 +51,7 @@ sub system_parsed {
 	waitpid $pid, 0;
 
 	my $status = $?;
+	print "$command exited with non zero as $status\n"; # if verbose bla
 
 	while( <$read> ){
 	

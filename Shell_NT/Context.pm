@@ -115,7 +115,9 @@ sub interpolate {
 	my $regex = qr/\$(\d+)\,?(\d+)?/; 
 	
 	while ( $cmdline =~ /$regex/g ){
-		my $token = $self->{parsed}[$1][$2];
+		my $line = $1;
+		my $column = $2 || 0;
+		my $token = $self->{parsed}[$line][$column];
 		$cmdline = "$`$token$'";
 	}
 

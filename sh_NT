@@ -8,8 +8,9 @@ use Cwd;
 my $dir;
 
 BEGIN {
-	$dir = getcwd();
-	$dir .= "/" . (fileparse($0))[1];
+	#$dir = getcwd();
+	#$dir .= "/" . (fileparse($0))[1];
+	$dir .=  (fileparse($0))[1];
 }
 
 use lib "$dir";
