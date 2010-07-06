@@ -12,7 +12,7 @@ package Shell_NT::Know;
 use warnings;
 use strict;
 
-use File::Path qw( make_path );
+use File::Path;
 
 # Data Sources
 use Config::General;
@@ -39,7 +39,7 @@ sub new {
 	my $filename = "$root/$name/know";
 	
 	if ( ! -w $filename ) {
-		make_path "$root/$name";
+		mkpath "$root/$name";
 		open my $fh, ">", $filename;
 		close $fh;
 	}
@@ -66,7 +66,7 @@ sub define_root {
 	return undef if ref $class;
 	
 	if ( ! -e $new_root ) {
-		make_path "$new_root";
+		mkpath "$new_root";
 	}
 	$root = $new_root;
 	

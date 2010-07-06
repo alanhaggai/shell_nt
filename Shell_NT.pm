@@ -12,6 +12,7 @@ use Shell_NT::Context;
 use Shell_NT::CommandLineParse;
 use Shell_NT::Know;
 use Shell_NT::Perl;
+use Shell_NT::Prompt;
 
 use Cwd;
 use Data::Dumper;
@@ -20,6 +21,8 @@ use Class::Inspector;  #TODO
 
 #use Module::Pluggable require => 1;
 use Module::Pluggable instantiate => 'new';
+
+
 
 # Create a self object for modules
 # It contains the actual context
@@ -70,6 +73,8 @@ sub new {
 	# The Perl thing
 	$self->{perl} = Shell_NT::Perl->new();
 
+	# The command prompt
+	$self->{prompt} = Shell_NT::Prompt->new();
     return $self;
 
 }
@@ -78,17 +83,17 @@ sub console {
 	
 	my ($self) = @_;
 
-    my $prompt = "#--> ";
+    my $prompt = $self->{prompt};
 
 	my $terminal = $self->{terminal};
    
-	# ?
 	my $OUT = $terminal->OUT || \*STDOUT;
 
-    while ( defined (my $cmdline = $terminal->readline( $prompt ) ) ) {
+    while ( defined (my $cmdline = $terminal->readline( $prompt->prompt() ) ) ) {
 			$cmdline = $self->{ctx}->interpolate( $cmdline );
 			my ( $type, $status ) = $self->_run( $cmdline );
 			$self->{history}->push( $type, $status, $cmdline );
+            $prompt->prompt();
     }
 }
 
@@ -115,6 +120,7 @@ sub _run {
 	# 
 	 
 	my @plugins = $self->plugins();
+    print "plugins: @plugins\n" if $ENV{SHELL_NT_DEBUG};
 
 	my $status;
 	for my $plugin ( @plugins) {
@@ -134,13 +140,13 @@ sub _run {
 	}
 
 	$self->{exec}->attach( $self );
-		$status = $self->{exec}->system_fallback( $command, @arguments );
+		eval {
+			$status = $self->{exec}->system_fallback( $command, @arguments );
+		};
 	$self->{exec}->detach();
 
 	$self->{status} = [ "S", $status, $cmdline ];
 	return "S", $status;
-
-	#error if $status;
 
 }
 

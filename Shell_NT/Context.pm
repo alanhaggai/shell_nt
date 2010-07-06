@@ -100,6 +100,7 @@ sub output {
 			print color 'reset';
 			$j++;
 		}
+        $j--;
 		print color 'blue';
 		print "\t[$i,$j]" if $columns > 2;
 		print "\n";

@@ -28,10 +28,14 @@ sub new {
 
 	my $self = {
 		history => [ ],
-		file => "$root/.shell_nt_history",
+		file => "$root/.shell_nt_history.$$",
+		base => "$root/",
 	};
 
 	bless $self, $class;
+
+	$self->{history} = [];
+	$self->{history_all} = [];
 
 	$self->load_history();
 
@@ -45,32 +49,51 @@ sub new {
 
 }
 
+# return a array with all histories files
+
+sub all_histories_files { 
+
+	my ( $self ) = @_;
+
+	opendir my $dir, $self->{base} or die "$?";
+
+		my @files = grep { /\.shell_nt_history\.\d+/ } readdir $dir;
+
+	closedir $dir;
+
+	return @files;
+
+}
+
+
 # there is a obvius bug that we do not support 
 # save history from more than one instance
 
 sub load_history {
 	
-	my ($self ) = @_;
+	my ( $self ) = @_;
+	my $base = $self->{base};
 
-	if (-e $self->{file} ) {
+	for my $file ( $self->all_histories_files ) {
+		if ( -e "$base$file" ) {
 
-		open my $fh, "<", $self->{file};
-			while ( my $historical = <$fh>) {
-				$historical =~ m/
-								(\d+)\t
-								(\w)\t
-								(\d+)\t
-								(.*)
-								/x;
-				push @{ $self->{history} }, [ $1, $2 , $3, $4 ];
-			}
-		close $fh;
-	
-		print "Looks that we recover the history from $self->{file}\n";
-	} else {
-		print "Starting a new history file in $self->{file}\n";
+			open my $fh, "<", "$base$file";
+				while ( my $historical = <$fh>) {
+					$historical =~ m/
+									(\d+)\t
+									(\w)\t
+									(\d+)\t
+									(.*)
+									/x;
+					push @{ $self->{history_all} }, [ $1, $2 , $3, $4 ];
+				}
+			close $fh;
+			print "Looks that we recover the history from $self->{base}\n" if $ENV{SHELL_NT_DEBUG};
+		}
 	}
-
+	
+	print "Starting a new history file in $self->{file}\n" if $ENV{SHELL_NT_DEBUG};
+	
 }
 
 # save the history in a file
@@ -79,7 +102,7 @@ sub load_history {
 sub DESTROY {
 
 	my ( $self ) = @_;
-
+	
 	open my $fh , ">" , $self->{file};
 		for my $register ( @{ $self->{history} } ){
 			chomp $register;
@@ -87,7 +110,7 @@ sub DESTROY {
 			print $fh "\n";
 		}
 	close $fh;
-
+	
 	#mmm, messages as functions
 	print "Looks that we saved the history at $self->{file}\n";
 }
@@ -95,27 +118,29 @@ sub DESTROY {
 # Adds a entry to history
 
 sub push {
-
+	
 	my ($self, $type, $status, $cmdline) = @_;
-
+	
 	my $epoch = time();
 	
 	push @{ $self->{history} }, [ $epoch, $type, $status, $cmdline ];
-
+	
 }
 
 sub all_commands {
 
 	my ( $self ) = @_;
 
-	return map { $_->[-1] } @{ $self->{history} };
+	return map { $_->[-1] } ( @{ $self->{history} } , @{ $self->{history_all} } );
 
 }
 
 sub all {
 	
 	my ( $self ) = @_;
-
-	return @{ $self->{history} };
-
+	
+	#order?
+	
+	return ( @{ $self->{history_all} }, @{ $self->{history} } );
+	
 }
