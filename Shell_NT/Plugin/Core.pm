@@ -15,24 +15,17 @@ use Data::Dumper;
 
 # System enviroment settings
 
-sub enviroment {
-
-	my ( $self ) = @_;
-	my $ctx = $self->{ctx};
-	# function answer list
-	# answer list can be paged (externally)
-
-    $ctx->add( $_ ) for map { "$_  =  $ENV{$_}\n"  }  keys %ENV;
-	$ctx->add( "Above was displayed the enviroment variables" );
-	$ctx->output();
-
-}
-
 sub env {
 
 	my ($self, $var, @arguments ) = @_;
-	# TODO sub?
+	
 	my $ctx = $self->{ctx};
+
+	if(! $var ) {
+		$ctx->add( $_ ) for map { "$_  =  $ENV{$_}\n"  }  keys %ENV;
+		$ctx->add( "Above was displayed the enviroment variables" );
+		$ctx->output();
+	}
 
 	if ( @arguments ) {
 		$ENV{$var} = @arguments;
@@ -113,13 +106,13 @@ sub set {
 # no and yes can be more abstract TODO
 
 sub noparse {
-
+	
 	my ($self, $command ) = @_;
-
+	
 	$self->{shell}{exec}{know}{parsed}{$command} = 0;
-
+	
 	return 1 if $self->{shell}{exec}{know}{parsed}{$command} == 0;
-
+	
 }
 
 sub parse {

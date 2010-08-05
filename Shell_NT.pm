@@ -13,6 +13,7 @@ use Shell_NT::CommandLineParse;
 use Shell_NT::Know;
 use Shell_NT::Perl;
 use Shell_NT::Prompt;
+use Shell_NT::Signal;
 
 use Cwd;
 use Data::Dumper;
@@ -21,8 +22,6 @@ use Class::Inspector;  #TODO
 
 #use Module::Pluggable require => 1;
 use Module::Pluggable instantiate => 'new';
-
-
 
 # Create a self object for modules
 # It contains the actual context
@@ -75,6 +74,10 @@ sub new {
 
 	# The command prompt
 	$self->{prompt} = Shell_NT::Prompt->new();
+
+	# Signal handlers
+	$self->{signal} = Shell_NT::Signal->new();
+
     return $self;
 
 }
@@ -84,16 +87,17 @@ sub console {
 	my ($self) = @_;
 
     my $prompt = $self->{prompt};
-
 	my $terminal = $self->{terminal};
    
 	my $OUT = $terminal->OUT || \*STDOUT;
 
-    while ( defined (my $cmdline = $terminal->readline( $prompt->prompt() ) ) ) {
+	# some flag to end the processing?
+    while ( 1 ) {
+			$prompt->show();
+			my $cmdline = $terminal->readline( ">" );
 			$cmdline = $self->{ctx}->interpolate( $cmdline );
 			my ( $type, $status ) = $self->_run( $cmdline );
 			$self->{history}->push( $type, $status, $cmdline );
-            $prompt->prompt();
     }
 }
 
@@ -150,3 +154,18 @@ sub _run {
 
 }
 
+sub child {
+
+	my ($self, $child) = @_;
+	
+	push @{ $self->{childs} } , $child;
+
+}
+
+sub ripchild {
+
+	my ($self, $child) = @_;
+	
+	$self->{childs} = [ grep { !/$child/ } @{ $self->{childs}} ] ;
+
+}

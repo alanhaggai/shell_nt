@@ -19,9 +19,10 @@ use Data::Dumper;
 # TODO have context inside here also
 #
 # Should define a namespace for itA
+# Also I print myself
 #
 
-sub prompt {
+sub show {
 
 	my ( $self ) = @_;
 
@@ -31,7 +32,7 @@ sub prompt {
 
 	my $prompt = $self->basic();
 
-	return $prompt. "-->";
+	print "$prompt\n";
 	
 }
 
@@ -51,7 +52,7 @@ sub basic {
 	chomp $dir;
 	chomp $host;
 
-	return "[: $git ] \@$host on $dir\n"; 
+	return "[: $git ] \@$host on $dir"; 
 
 
 

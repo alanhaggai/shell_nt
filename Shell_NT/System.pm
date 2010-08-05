@@ -49,19 +49,23 @@ sub system_parsed {
 	my ( $read, $write, $error );
 
 	my $pid = open3( $write, $read, $error, "$command @args");
+
+	$self->{shell}->{signal}->alarm($command, $pid);
+	alarm 3;
 	
 	waitpid $pid, 0;
-
+	
 	my $status = $?;
 	print "$command exited with $status\n" if $ENV{SHELL_NT_DEBUG};
 
 	while( <$read> ){
 		print "[$_]" if $ENV{SHELL_NT_DEBUG};
 		$ctx->add ( $_ );
-	
 	}
 
 	$ctx->output( $status );
+
+	alarm 0;
 
 	return $status;
 
@@ -92,3 +96,4 @@ sub to_be_parsed {
 	}
 	return 1;
 }
+
