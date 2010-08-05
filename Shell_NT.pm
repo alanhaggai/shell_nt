@@ -40,19 +40,19 @@ use Module::Pluggable instantiate => 'new';
 #
 
 sub new {
-
-    my ($class) = @_;
-
+	
+	my ($class) = @_;
+	
 	# Some hardcoded defaults for now
 	# know is the the file that knows 
 	# what shell should know :)
 	Shell_NT::Know->define_root("$ENV{HOME}/.shell_nt/");
-    
+	
 	my $self = $class->SUPER::new();
-
+	
 	$self->{refdir} = cwd;
 	$self->{mycmdline} = "$0 @ARGV";
-
+	
 	# History is mandatory to this shell work
 	$self->{history} = Shell_NT::History->new();
 	
@@ -60,26 +60,26 @@ sub new {
 	# Shell_NT::System acks like a plugin
 	# but pass the command to a method
 	$self->{exec} = Shell_NT::System->new();
-
+	
 	# now, create the terminal
 	$self->{terminal} = Term::ReadLine->new('Shell_NT');
 	# add the old history to terminal (for use with up key)
 	$self->{terminal}->addhistory($_) for ( $self->{history}->all_commands() );
-
+	
 	# Add the context
 	$self->{ctx} = Shell_NT::Context->new();
 	
 	# The Perl thing
 	$self->{perl} = Shell_NT::Perl->new();
-
+	
 	# The command prompt
 	$self->{prompt} = Shell_NT::Prompt->new();
-
+	
 	# Signal handlers
 	$self->{signal} = Shell_NT::Signal->new();
-
-    return $self;
-
+	
+	return $self;
+	
 }
 
 sub console {

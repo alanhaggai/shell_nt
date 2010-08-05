@@ -51,8 +51,6 @@ sub alarm {
 
 	my ( $self, $command, $pid ) = @_;
 
-	print "foo\n";
-
 	$SIG{ALRM} = sub {
 
 		kill 9 , $pid;

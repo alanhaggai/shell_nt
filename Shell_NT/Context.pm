@@ -144,6 +144,18 @@ sub interpolate {
 		$cmdline = "$`$token$'";
 	}
 
+	# now interpolates env vars
+	
+	my $env = qr/\$(\w+)/;
+
+	while ( $cmdline =~ /$env/g ){
+		for my $env_var ( keys %ENV ) {
+			next if !( $env_var =~ /^$env$/ );
+				my $token = $ENV{$env_var};
+				$cmdline = "$`$token$'";
+		}
+	}
+
 	return $cmdline;
 
 }
