@@ -31,6 +31,9 @@ my $doublequote = qr/$not\"/;
 
 my $twodots = qr/$not\:/;
 
+my $start_block = qr/$not\{/;
+my $end_block = qr/$not\}/;
+
 sub parse_cmdline {
 	
 	my $cmdline = shift;
@@ -44,7 +47,7 @@ sub parse_cmdline {
 		my $pre = $`;
 		my $sep = $&;
 		my $pos = $';
-
+		
 		if ( ! $sep ) {
 			push @stack, $cmdline;
 			last;
@@ -64,8 +67,14 @@ sub parse_cmdline {
 			push @stack , $string;
 			next;
 		}
+		
 	}
 
+	# TODO do not repeat yourself
+	if ( $stack[0] =~ /$start_block/ && $stack[-1] =~ /$end_block/){
+		$stack[0] = "eval";
+		pop @stack;
+	}
 	return @stack;
 
 }

@@ -19,6 +19,7 @@ my $tests = [
 	[ '/usr/bin/ls /', '/usr/bin/ls', '/'],
 	[ '/home\ with\ spaces/frederico/command foo bar', '/home\ with\ spaces/frederico/command', "foo", "bar"],
 	[ '"/usr/ bin/ls" /fo\ o  \' \'', '"/usr/ bin/ls"', '/fo\ o',"' '"],
+	[ ' { print "$0  " ; print $0 } ', 'eval', "print" , '"$0  "', ";", "print", '$0'],
 ];
 
 plan tests => ( scalar @$tests ) * 2 + 1;
@@ -30,7 +31,7 @@ for my $cmdline ( @{ $tests } ) {
 	diag "now: $cmdline->[0]\n";
 	my ( $command, @arguments ) = parse_cmdline( $cmdline->[0] );
 
-	ok ( $command eq $cmdline->[1] , "Command ok: $command");
+	ok ( $command eq $cmdline->[1] , "Command ok: $command eq $cmdline->[1]");
 	is_deeply ( [ $cmdline->[0], $command, @arguments ] , $cmdline , "all arguments: @arguments");
 
 }

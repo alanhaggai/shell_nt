@@ -11,7 +11,6 @@ use Shell_NT::History;
 use Shell_NT::Context;
 use Shell_NT::CommandLineParse;
 use Shell_NT::Know;
-use Shell_NT::Perl;
 use Shell_NT::Prompt;
 use Shell_NT::Signal;
 
@@ -68,9 +67,6 @@ sub new {
 	
 	# Add the context
 	$self->{ctx} = Shell_NT::Context->new();
-	
-	# The Perl thing
-	$self->{perl} = Shell_NT::Perl->new();
 	
 	# The command prompt
 	$self->{prompt} = Shell_NT::Prompt->new();
